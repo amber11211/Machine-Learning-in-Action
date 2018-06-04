@@ -4,11 +4,13 @@
 # k近邻算法；
 # 2.1.1准备：使用python导入数据。导入模块：科学计算包Numpy，运算符模块；createDataSet()函数：创建数据集和标签
 
-# In[1]:
+# In[4]:
 
 
 from numpy import *
 import operator
+from os import listdir#手写识别算法
+
 
 def createDataSet():
     group = array([[1.0,1.1],[1.0,1.0],[0,0],[0,0.1]])
@@ -158,3 +160,61 @@ def classifyPerson():
 
 
 # >kNN.classifyPerson()
+
+# 2.3手写识别系统
+
+# 2.3.1准备数据：将图像转换为测试向量
+# 函数img2vector将图像转换为向量
+
+# In[1]:
+
+
+def img2vector(filename):
+    returnVect = zeros((1,1024))
+    fr = open(filename)
+    for i in range(32):
+        lineStr = fr.readline()
+        for j in range(32):
+            returnVect[0,32*i+j] = int(lineStr[j])
+    return returnVect
+
+
+# >testVector = kNN.img2vector('testDigits/0_13.txt')
+# >
+# >testVector[0,0:31]
+# >
+# >testVector[0,32:63]
+
+# 2.3.2测试算法：使用k-近邻算法识别手写数字
+# 程序清单2-6:函数handwritingClassTest()测试分类器
+
+# In[5]:
+
+
+def handwritingClassTest():
+    hwLabels = []
+    trainingFileList = listdir('trainingDigits')
+    m = len(trainingFileList)
+    trainingMat = zeros((m,1024))
+    for i in range(m):
+        fileNameStr = trainingFileList[i]
+        fileStr = fileNameStr.split('.')[0]
+        classNumStr = int(fileStr.split('_')[0])
+        hwLabels.append(classNumStr)
+        trainingMat[i,:] = img2vector('trainingDigits/%s' % fileNameStr)
+    testFileList = listdir('testDigits')
+    errorCount = 0.0
+    mTest = len(testFileList)
+    for i in range(mTest):
+        fileNameStr = testFileList[i]
+        fileStr = fileNameStr.split('_')[0]
+        classNumStr = int(fileStr.split('_')[0])
+        vectorUnderTest = img2vector('testDigits/%s' % fileNameStr)
+        classifierResult = classify0(vectorUnderTest, trainingMat, hwLabels, 3)
+        print "the classifier came back with: %d, the real answer is: %d" %(classifierResult, classNumStr)
+        if (classifierResult !=classNumStr): errorCount += 1.0
+    print "\nthe total number of errors is: %d" % errorCount
+    print "\nthe total error rate is: %f" % (errorCount/float(mTest))
+
+
+# >kNN.handwritingClassTest()
